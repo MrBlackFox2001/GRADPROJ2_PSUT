@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrhythmia Detector</title>
+    <link rel="icon" href="data:,">
+    <style>
+        body {
+            background-image: url("https://thumbs.dreamstime.com/b/hd-electrocardiogram-ecg-paper-background-square-160410630.jpg");
+            background-position: bottom;
+            background-size: 99% auto;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #container {
+            text-align: center;
+            margin-top: 50px;
+            position: relative;
+        }
+
+        .navigation-button, #choose-image-label, #file-info, #img, #privacy-box, #about-box, #contact-box {
+            color: black;
+        }
+
+        /* Red text style */
+        .red-text {
+            color: red;
+            font-weight: bold; /* Optional: Make the red words bold */
+        }
+
+        .navigation-button {
+            font-size: 24px;
+            padding: 10px 20px;
+            text-decoration: none;
+            background-color: transparent;
+            border: none;
+            margin: 0 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .navigation-button:hover {
+            color: #ff0000; /* Change color on hover */
+            transition: color 0.5s ease; /* Smooth transition */
+        }
+
+        #choose-image-label:hover {
+            color: black; /* Change color to black on hover */
+            cursor: pointer;
+            transition: color 0.3s ease; /* Smooth transition */
+        }
+
+        #choose-image-label {
+            color: red;
+            display: block;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        #file-info {
+            color: black;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        #privacy-button, #about-button, #contact-button {
+            position: relative;
+            top: 10px;
+        }
+
+        #image-container {
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        #img {
+            display: none;
+        }
+
+        #logo {
+            position: absolute;
+            top: 17px;
+            right: 18px;
+            width: 180px;
+            height: 190px;
+        }
+
+        /* About and Privacy Box Styles */
+        .info-box {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            color: black !important; /* Change text color to black with !important */
+        }
+
+        .close-info-box {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+        <a href="#" id="privacy-button" class="navigation-button">Privacy</a>
+        <a href="#" id="about-button" class="navigation-button">About</a>
+        <a href="#" id="contact-button" class="navigation-button">Contact</a>
+
+        <h1>Welcome to the Arrhythmia Detector <span style="color: red;">iHeartDetect</span></h1>
+
+        <img id="logo" src="https://erc-jordan.org/wp-content/uploads/2023/02/PSUT.png" alt="PSUT Logo">
+
+        <div id="image-container">
+            <img src="https://www.emkatech.com/wp-content/uploads/2021/11/Arrhythmia.png" alt="Image Description" width="100" height="100">
+            <br><br>
+            <p id="file-info">The image must be in JPEG, JPG, PNG, or BMP format.</p>
+            <form id="upload-form" enctype="multipart/form-data">
+                <!-- The label works as a proxy for the file input field that is hidden -->
+                <label for="img" id="choose-image-label">Choose Image</label>
+                <!-- The file input field is hidden and will be triggered when the label above is clicked -->
+                <input type="file" id="img" name="img" accept=".jpeg, .jpg, .png, .bmp" style="display: none;">
+                <!-- You may have other form elements here -->
+            </form>
+            <!-- Add this line to display the prediction result -->
+            <p id="prediction-result" style="font-weight: bold; color: black;">
+                Prediction Result: 
+            </p>
+            <span style="color: black;" id="actual-result"></span>
+        </div>
+        
+
+        <!-- About Box -->
+        <div id="about-box" class="info-box">
+            <span class="close-info-box" onclick="toggleInfoBox('about-box')">&times;</span>
+            <p>iHeartDetect is a machine learning-based model designed to analyze, detect, and report arrhythmia in ECG tests.
+                The model is based on <span class="red-text">AWS</span>, providing excellent scalability, reliability, and response time.
+                It was trained on the <span class="red-text">MIT-BIH</span> dataset and uses the <span class="red-text">CNN-GRU</span> hybrid network, achieving excellent performance in all metrics.
+            </p>
+        </div>
+
+        <!-- Privacy Box -->
+        <div id="privacy-box" class="info-box">
+            <span class="close-info-box" onclick="toggleInfoBox('privacy-box')">&times;</span>
+            <p>We collect ECG data solely for the purpose of providing you with accurate and personalized health insights, implementing stringent security measures to protect your information from unauthorized access.
+                The <span class="red-text">ECG</span> data is handled with utmost care and privacy.
+            </p>
+        </div>
+
+        <!-- Contact Box -->
+        <div id="contact-box" class="info-box">
+            <span class="close-info-box" onclick="toggleInfoBox('contact-box')">&times;</span>
+            <p>This webpage connected to the deep learning model delivered by AWS services has been fully deployed by <span class="red-text">PSUT</span> students. You can contact us at: abd20190847@std.psut.edu.jo, yara@std.psut.edu.jo, tamara@std.psut.edu.jo</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('privacy-button').addEventListener('click', function () {
+            toggleInfoBox('privacy-box');
+        });
+        
+        document.getElementById('about-button').addEventListener('click', function () {
+            toggleInfoBox('about-box');
+        });
+        
+        document.getElementById('contact-button').addEventListener('click', function () {
+            toggleInfoBox('contact-box');
+        });
+        document.getElementById('choose-image-label').addEventListener('click', function () {
+            document.getElementById('img').click();
+        });
+        
+        document.getElementById('img').addEventListener('change', function () {
+            uploadImage(); // Call the uploadImage function when an image is selected
+        });
+        
+        async function uploadImage() {
+            const fileInput = document.getElementById('img');
+            const file = fileInput.files[0];
+        
+            if (!file) {
+                alert('Please choose a file.');
+                return;
+            }
+        
+            const formData = new FormData();
+            formData.append('img', file);
+        
+            try {
+                const response = await fetch('http://127.0.0.1:5000/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+            
+                if (!response.ok) {
+                    throw new Error('Failed to upload image.');
+                }
+            
+                const result = await response.json();
+            
+                // Update a specific HTML element with the prediction result
+                document.getElementById('prediction-result').textContent = 'Prediction Result:';
+            
+                let text = "";
+                const sequance = (txt) => {
+                    if(text === result.prediction) return;
+                    //const timeoutDelay = Math.random() * 100
+                    const timeoutDelay = 50
+                    const timeout = setTimeout(() => {
+                      text = result.prediction.slice(0, text.length + 1)
+                      document.getElementById('actual-result').textContent = text;
+                      sequance(text)
+                      clearTimeout(timeout)
+                    }, timeoutDelay)
+                  }
+                  
+                // Update the actual result inside the <span> element with the id "actual-result"
+                if(result.prediction) {
+                    sequance(result.prediction)
+                } 
+            
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                alert('Error uploading image: ' + error.message);
+            }
+            
+        }
+        function toggleInfoBox(boxId) {
+            var infoBoxes = document.querySelectorAll('.info-box');
+
+            infoBoxes.forEach(function (box) {
+                if (box.id === boxId) {
+                    // Toggle the selected box
+                    box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+                } else {
+                    // Hide other boxes
+                    box.style.display = 'none';
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>
