@@ -8,9 +8,9 @@
     <link rel="icon" href="data:,">
     <style>
         body {
-            background-image: url("https://thumbs.dreamstime.com/b/hd-electrocardiogram-ecg-paper-background-square-160410630.jpg");
+            background-image: url("https://www.publicdomainpictures.net/pictures/280000/nahled/textured-white-background.jpg");            
             background-position: bottom;
-            background-size: 99% auto;
+            background-size: 90% auto;
             font-family: Arial, sans-serif;
             margin: 0;
         }
@@ -46,7 +46,11 @@
             font-weight: bold;
             display: inline-block;
         }
-
+        #choose-file-button:hover {
+            background-color: red; /* Or any shade of red you prefer */
+            color: white; /* Optional: changing the text color to white for better visibility */
+            /* Other styles for hover state if needed */
+        }
         .navigation-button:hover {
             color: #ff0000; /* Change color on hover */
             transition: color 0.5s ease; /* Smooth transition */
@@ -58,13 +62,19 @@
             transition: color 0.3s ease; /* Smooth transition */
         }
 
-        #choose-image-label {
-            color: red;
-            display: block;
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 10px;
-            cursor: pointer;
+        #choose-xml-label, #choose-raw-label {
+            display: none;
+        }
+        #choose-file-button {
+            font-size: 20px;
+            color: black;
+            font-weight: bold;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 0;
+            width: 350px;
+            margin: 15px auto;
         }
 
         #file-info {
@@ -83,16 +93,14 @@
             text-align: center;
         }
 
-        #img {
-            display: none;
-        }
-
         #logo {
-            position: absolute;
+            position: fixed;
+            left: 1450px;
+            bottom: 10px;
             top: 17px;
             right: 18px;
-            width: 180px;
-            height: 190px;
+            width: 80px;
+            height: 90px;
         }
 
         /* About and Privacy Box Styles */
@@ -119,6 +127,15 @@
             font-size: 20px;
             color: black;
         }
+        
+        .processed-image:empty {
+            display: none;
+        }
+
+        input[type=file] {
+            display: none
+        }
+
     </style>
 </head>
 
@@ -132,26 +149,38 @@
         <h1>Welcome to the Arrhythmia Detector <span style="color: red;">iHeartDetect</span></h1>
 
         <img id="logo" src="https://erc-jordan.org/wp-content/uploads/2023/02/PSUT.png" alt="PSUT Logo">
-
         <div id="image-container">
             <img src="https://www.emkatech.com/wp-content/uploads/2021/11/Arrhythmia.png" alt="Image Description" width="100" height="100">
             <br><br>
-            <p id="file-info">The image must be in JPEG, JPG, PNG, or BMP format.</p>
+            <p id="hello-text">Please insert an ECG in format of Image, XML, or a Raw Data. The model will return the classified Arrhythmia class.</p>
+
+            <div id="file-type-selection" style="text-align: center; margin-bottom: 20px;">
+                <label for="file-type" style="font-size: 24px; color: black;">Select File Type:</label>
+                <select id="file-type" name="file-type" style="font-size: 20px; padding: 5px 10px; margin-left: 10px;">
+                    <option value="image">Image</option>
+                    <option value="xml">XML</option>
+                    <option value="raw">Raw Data</option>
+                </select>
+            </div>
             <form id="upload-form" enctype="multipart/form-data">
-                <!-- The label works as a proxy for the file input field that is hidden -->
-                <label for="img" id="choose-image-label">Choose Image</label>
-                <!-- The file input field is hidden and will be triggered when the label above is clicked -->
-                <input type="file" id="img" name="img" accept=".jpeg, .jpg, .png, .bmp" style="display: none;">
-                <!-- You may have other form elements here -->
+                <label for="img" id="choose-image-label">Note: Image must be .jpeg, .jpg, .png, .bmp</label>
+                <input type="file" id="img" name="img" accept=".jpeg, .jpg, .png, .bmp">
+                
+                <label for="xml" id="choose-xml-label">Note: XML file must be in the HL7aECG format</label>
+                <input type="file" id="xml" name="xml" accept=".xml" style="display: none;">
+                
+                <label for="raw" id="choose-raw-label">Note: Raw Data File must be a CSV</label>
+                <input type="file" id="raw" name="raw" accept=".csv" style="display: none;">
             </form>
+
+            <button id="choose-file-button">Choose a file</button>
             <!-- Add this line to display the prediction result -->
             <p id="prediction-result" style="font-weight: bold; color: black;">
-                Prediction Result: 
             </p>
+            <div class="processed-image"></div>
             <span style="color: black;" id="actual-result"></span>
         </div>
         
-
         <!-- About Box -->
         <div id="about-box" class="info-box">
             <span class="close-info-box" onclick="toggleInfoBox('about-box')">&times;</span>
@@ -174,6 +203,7 @@
             <span class="close-info-box" onclick="toggleInfoBox('contact-box')">&times;</span>
             <p>This webpage connected to the deep learning model delivered by AWS services has been fully deployed by <span class="red-text">PSUT</span> students. You can contact us at: abd20190847@std.psut.edu.jo, yara@std.psut.edu.jo, tamara@std.psut.edu.jo</p>
         </div>
+        
     </div>
 
     <script>
@@ -188,14 +218,10 @@
         document.getElementById('contact-button').addEventListener('click', function () {
             toggleInfoBox('contact-box');
         });
-        document.getElementById('choose-image-label').addEventListener('click', function () {
-            document.getElementById('img').click();
-        });
         
-        document.getElementById('img').addEventListener('change', function () {
-            uploadImage(); // Call the uploadImage function when an image is selected
+        document.getElementById('file-type').addEventListener('change', function () {
+            updateFileInput();
         });
-        
         async function uploadImage() {
             const fileInput = document.getElementById('img');
             const file = fileInput.files[0];
@@ -260,6 +286,113 @@
                 }
             });
         }
+        async function uploadFile(fileType) {
+            const fileInput = document.getElementById(fileType);
+            const file = fileInput.files[0];
+            document.getElementById("choose-file-button").innerText = file.name;
+            if(fileType === "img" && file)
+            {
+                var imgEle = document.createElement("img");
+                const reader = new FileReader();
+
+                reader.addEventListener(
+                    "load",
+                    () => {imgEle.src = reader.result;},
+                );
+
+                reader.readAsDataURL(file);
+                document.querySelector(".processed-image").append(imgEle)
+            }
+            else {
+                document.querySelector(".processed-image").innerHTML = null;
+            }
+        
+            if (!file) {
+                alert('Please choose a file.');
+                return;
+            }
+        
+            const formData = new FormData();
+            formData.append("file", file);
+        
+            try {
+                const response = await fetch('http://127.0.0.1:5000/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+        
+                if (!response.ok) {
+                    throw new Error('Failed to upload file.');
+                }
+        
+                const result = await response.json();
+        
+                // Update a specific HTML element with the prediction result
+                document.getElementById('prediction-result').textContent = 'Prediction Result:';
+        
+                let text = "";
+                const sequance = (txt) => {
+                    if (text === result.prediction) return;
+                    const timeoutDelay = 50;
+                    const timeout = setTimeout(() => {
+                        text = result.prediction.slice(0, text.length + 1)
+                        document.getElementById('actual-result').textContent = text;
+                        sequance(text)
+                        clearTimeout(timeout);
+                    }, timeoutDelay);
+                }
+        
+                // Update the actual result inside the <span> element with the id "actual-result"
+                if (result.prediction) {
+                    sequance(result.prediction);
+                }
+        
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('Error uploading file: ' + error.message);
+            }
+        }
+        function updateFileInput() {
+            var fileType = document.getElementById('file-type').value;
+            var fileInput = document.getElementById('img');
+            document.getElementById("choose-file-button").innerText = "Choose a file"
+            
+            // Hide all file inputs
+            document.getElementById('img').style.display = 'none';
+            document.getElementById('choose-image-label').style.display = 'none';
+            document.getElementById('xml').style.display = 'none';
+            document.getElementById('choose-xml-label').style.display = 'none';
+            document.getElementById('raw').style.display = 'none';
+            document.getElementById('choose-raw-label').style.display = 'none';
+            
+            // Show the selected file input based on the fileType
+            if (fileType === 'image') {
+                fileInput = document.getElementById('img');
+            } else if (fileType === 'xml') {
+                fileInput = document.getElementById('xml');
+            } else if (fileType === 'raw') {
+                fileInput = document.getElementById('raw');
+            }
+            
+            //fileInput.style.display = 'block';
+            document.getElementById(`choose-${fileType}-label`).style.display = 'block';
+
+        }
+
+        document.querySelectorAll("input[type=file]").forEach(input => {
+            input.addEventListener("change", async function(e) {
+                var rawFileType = document.getElementById('file-type').value;
+                const fileType = rawFileType === "image" ? "img" : rawFileType;
+                await uploadFile(fileType);
+            })
+        })
+
+        document.getElementById("choose-file-button").addEventListener("click", function() {
+            var rawFileType = document.getElementById('file-type').value;
+            const fileType = rawFileType === "image" ? "img" : rawFileType;
+            document.getElementById(fileType).click()
+        })
+        
     </script>
 
 </body>
